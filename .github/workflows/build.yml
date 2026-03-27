@@ -38,6 +38,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyinstaller
 
+    - name: Test Python script
+      run: |
+        python hello_world.py > output.txt
+        grep -q "Hello, World!" output.txt || (echo "Test failed: Expected output not found" && exit 1)
+        echo "✓ Python script test passed"
+
     - name: Build on Linux
       if: runner.os == 'Linux'
       run: |
@@ -45,11 +51,25 @@ jobs:
         mkdir -p dist
         ls -la dist/
 
+    - name: Test Linux executable
+      if: runner.os == 'Linux'
+      run: |
+        ./dist/hello_world > test_output.txt
+        grep -q "Hello, World!" test_output.txt || (echo "Test failed: Expected output not found" && exit 1)
+        echo "✓ Linux executable test passed"
+
     - name: Build on Windows
       if: runner.os == 'Windows'
       run: |
         pyinstaller --onefile --name hello_world hello_world.py
         dir dist\
+
+    - name: Test Windows executable
+      if: runner.os == 'Windows'
+      run: |
+        .\dist\hello_world.exe > test_output.txt
+        findstr /C:"Hello, World!" test_output.txt || (echo Test failed: Expected output not found && exit 1)
+        echo ✓ Windows executable test passed
 
     - name: Build on macOS
       if: runner.os == 'macOS'
@@ -59,6 +79,13 @@ jobs:
         # Create DMG for macOS
         brew install create-dmg
         create-dmg --volname "Hello World" --window-pos 200 120 --window-size 800 600 --app-drop-link 750 250 "dist/hello_world.dmg" "dist/hello_world"
+
+    - name: Test macOS executable
+      if: runner.os == 'macOS'
+      run: |
+        ./dist/hello_world > test_output.txt
+        grep -q "Hello, World!" test_output.txt || (echo "Test failed: Expected output not found" && exit 1)
+        echo "✓ macOS executable test passed"
 
     - name: Upload Linux artifact
       if: runner.os == 'Linux'
