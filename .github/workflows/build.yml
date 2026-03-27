@@ -1,0 +1,82 @@
+name: Multi-Platform Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: hello_world
+            asset_name: hello_world-linux
+          - os: windows-latest
+            artifact_name: hello_world.exe
+            asset_name: hello_world-windows.exe
+          - os: macos-latest
+            artifact_name: hello_world
+            asset_name: hello_world-macos-arm
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install PyInstaller
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+
+    - name: Build on Linux
+      if: runner.os == 'Linux'
+      run: |
+        pyinstaller --onefile --name hello_world hello_world.py
+        mkdir -p dist
+        ls -la dist/
+
+    - name: Build on Windows
+      if: runner.os == 'Windows'
+      run: |
+        pyinstaller --onefile --name hello_world hello_world.py
+        dir dist\
+
+    - name: Build on macOS
+      if: runner.os == 'macOS'
+      run: |
+        pyinstaller --onefile --name hello_world hello_world.py
+        ls -la dist/
+        # Create DMG for macOS
+        brew install create-dmg
+        create-dmg --volname "Hello World" --window-pos 200 120 --window-size 800 600 --app-drop-link 750 250 "dist/hello_world.dmg" "dist/hello_world"
+
+    - name: Upload Linux artifact
+      if: runner.os == 'Linux'
+      uses: actions/upload-artifact@v3
+      with:
+        name: hello_world-linux
+        path: dist/hello_world
+
+    - name: Upload Windows artifact
+      if: runner.os == 'Windows'
+      uses: actions/upload-artifact@v3
+      with:
+        name: hello_world-windows
+        path: dist/hello_world.exe
+
+    - name: Upload macOS artifact
+      if: runner.os == 'macOS'
+      uses: actions/upload-artifact@v3
+      with:
+        name: hello_world-macos-dmg
+        path: dist/hello_world.dmg
