@@ -62,21 +62,21 @@ jobs:
 
     - name: Upload Linux artifact
       if: runner.os == 'Linux'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: hello_world-linux
         path: dist/hello_world
 
     - name: Upload Windows artifact
       if: runner.os == 'Windows'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: hello_world-windows
         path: dist/hello_world.exe
 
     - name: Upload macOS artifact
       if: runner.os == 'macOS'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: hello_world-macos-dmg
         path: dist/hello_world.dmg
